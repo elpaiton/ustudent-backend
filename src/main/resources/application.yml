@@ -114,6 +114,11 @@ spring:
 logging:
   pattern:
     console: "%d{HH:mm:ss} %-5level [%X{traceId:-}] %logger{36} - %msg%n"
+  level:
+    # DevTools imprime en cada reinicio que autoconfiguraciones cambiaron de
+    # estado. Es util para depurar un problema de configuracion concreto, y
+    # puro ruido el resto del tiempo. Subelo a DEBUG cuando lo necesites.
+    org.springframework.boot.devtools.autoconfigure.ConditionEvaluationDeltaLoggingListener: WARN
 
 ---
 spring:
