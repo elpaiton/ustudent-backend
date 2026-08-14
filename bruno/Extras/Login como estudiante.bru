@@ -1,0 +1,59 @@
+meta {
+  name: Login como estudiante
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{estudianteEmail}}",
+    "password": "{{password}}"
+  }
+}
+
+docs {
+  Sirve para ver la diferencia de permisos entre roles, que es lo que hace
+  que cada usuario vea un menu distinto.
+
+  Un estudiante recibe tres permisos; un administrador, veinticinco. Y hay
+  uno que el estudiante NO debe tener bajo ningun concepto:
+  risk:read:student. El puntaje de riesgo no se muestra ni al estudiante ni
+  al docente, para evitar estigmatizacion.
+
+  Tras ejecutar esto, la sesion activa pasa a ser la del estudiante. Ejecuta
+  Logout antes de volver al flujo de la carpeta Auth.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("tiene el rol de estudiante", function() {
+    expect(res.getBody().roles).to.include("STUDENT");
+  });
+
+  test("puede radicar solicitudes y registrar su animo", function() {
+    const permisos = res.getBody().permissions;
+    expect(permisos).to.include("case:create:self");
+    expect(permisos).to.include("mood:create:self");
+  });
+
+  test("NUNCA ve el riesgo de desercion ni gestiona usuarios", function() {
+    const permisos = res.getBody().permissions;
+    expect(permisos).to.not.include("risk:read:student");
+    expect(permisos).to.not.include("risk:read:dashboard");
+    expect(permisos).to.not.include("user:manage");
+    expect(permisos).to.not.include("case:read:any");
+  });
+}

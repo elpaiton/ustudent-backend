@@ -1,0 +1,39 @@
+meta {
+  name: Me
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+docs {
+  Perfil del usuario autenticado.
+
+  No lleva cabecera de autorizacion: la cookie que guardo el login se envia
+  sola. Es exactamente lo que hace el navegador, asi que esta peticion prueba
+  el mismo camino que usa el frontend.
+
+  El campo permissions es con el que el cliente decide que menu mostrar.
+  Ocultar no es autorizar: cada endpoint vuelve a comprobar el permiso.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("es el mismo usuario que inicio sesion", function() {
+    expect(res.getBody().id).to.equal(bru.getVar("usuarioId"));
+    expect(res.getBody().email).to.equal(bru.getEnvVar("adminEmail"));
+  });
+
+  test("nunca expone el hash de la contrasena", function() {
+    const texto = JSON.stringify(res.getBody()).toLowerCase();
+    expect(texto).to.not.contain("password");
+    expect(texto).to.not.contain("hash");
+  });
+}

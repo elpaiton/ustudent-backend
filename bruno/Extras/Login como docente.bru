@@ -1,0 +1,45 @@
+meta {
+  name: Login como docente
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{docenteEmail}}",
+    "password": "{{password}}"
+  }
+}
+
+docs {
+  El docente puede reportar la situacion de un estudiante y ver los
+  estudiantes de sus grupos, pero no accede a expedientes ni al riesgo.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("puede reportar sobre un estudiante y ver sus grupos", function() {
+    const permisos = res.getBody().permissions;
+    expect(permisos).to.include("case:create:staff");
+    expect(permisos).to.include("student:read:group");
+  });
+
+  test("no accede al expediente completo ni al riesgo", function() {
+    const permisos = res.getBody().permissions;
+    expect(permisos).to.not.include("student:read:dossier");
+    expect(permisos).to.not.include("risk:read:student");
+  });
+}

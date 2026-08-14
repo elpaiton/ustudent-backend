@@ -1,0 +1,58 @@
+meta {
+  name: Bloqueo por intentos
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{bienestarEmail}}",
+    "password": "contrasena-incorrecta"
+  }
+}
+
+docs {
+  CUIDADO: esta peticion suma un intento fallido REAL a la cuenta
+  bienestar@usta.edu.co. A la quinta ejecucion la deja bloqueada quince
+  minutos.
+
+  Se usa esa cuenta a proposito, y no la de administrador, para que
+  bloquearla no te deje sin acceso al resto de la coleccion.
+
+  Como comprobar el bloqueo:
+    1. Ejecuta esta peticion cinco veces seguidas.
+    2. Intenta entrar con la contrasena CORRECTA de esa cuenta.
+    3. Debe seguir rechazandote, y el mensaje ya no dice "Correo o
+       contrasena incorrectos" sino que la cuenta esta bloqueada.
+
+  Para recuperar el acceso antes de los quince minutos:
+    docker exec -it ustudent-db psql -U ustudent -d ustudent \
+      -c "update iam_users set status='ACTIVE', failed_attempts=0, locked_until=null where email='bienestar@usta.edu.co';"
+
+  Este mecanismo tenia un fallo real: la excepcion de credenciales invalidas
+  revertia la transaccion junto con el contador, asi que no bloqueaba nunca.
+  Por eso el contador se escribe en una transaccion aparte.
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("informa del estado de la cuenta", function() {
+    const detalle = res.getBody().detail;
+    const esCredencial = detalle.includes("Correo o contrasena incorrectos");
+    const esBloqueo = detalle.includes("bloqueada");
+    expect(esCredencial || esBloqueo).to.be.true;
+  });
+}

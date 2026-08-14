@@ -1,0 +1,29 @@
+meta {
+  name: Me despues de salir
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+docs {
+  Cierra el ciclo: tras salir, la sesion ya no sirve.
+
+  Es la comprobacion que suele faltar. Una aplicacion puede parecer que
+  cierra sesion correctamente porque la interfaz vuelve al login, mientras
+  el token sigue siendo valido en el servidor.
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("el cuerpo sigue el formato de error de la API", function() {
+    expect(res.getBody().code).to.equal("UNAUTHENTICATED");
+  });
+}

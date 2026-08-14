@@ -1,0 +1,79 @@
+meta {
+  name: Login
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{adminEmail}}",
+    "password": "{{password}}"
+  }
+}
+
+docs {
+  Inicio de sesion correcto.
+
+  Los tokens NO viajan en el cuerpo: llegan en dos cookies httpOnly que
+  Bruno guarda solo y reenvia en las siguientes peticiones. Por eso no hace
+  falta copiar ningun token a mano ni configurar cabeceras de autorizacion.
+
+  - ustudent_access  · path /            · vida 30 min
+  - ustudent_refresh · path /api/v1/auth · vida 8 h
+
+  La cookie de refresco se acota a /api/v1/auth para que no viaje en cada
+  peticion de la API.
+
+  Requiere el perfil local en el backend, que es el que crea las cuentas de
+  prueba:
+    ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+}
+
+script:post-response {
+  // Deja el identificador a mano por si hace falta en peticiones futuras.
+  if (res.getStatus() === 200) {
+    bru.setVar("usuarioId", res.getBody().id);
+  }
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("devuelve el perfil con sus permisos", function() {
+    const body = res.getBody();
+    expect(body.email).to.equal(bru.getEnvVar("adminEmail"));
+    expect(body.roles).to.include("ADMIN");
+    expect(body.permissions).to.be.an("array").that.is.not.empty;
+  });
+
+  test("el administrador puede gestionar usuarios y roles", function() {
+    const permisos = res.getBody().permissions;
+    expect(permisos).to.include("user:manage");
+    expect(permisos).to.include("role:manage");
+  });
+
+  test("el token nunca aparece en el cuerpo de la respuesta", function() {
+    const texto = JSON.stringify(res.getBody());
+    expect(texto).to.not.contain("eyJ");
+    expect(texto).to.not.contain("token");
+  });
+
+  test("las cookies son httpOnly", function() {
+    const cookies = res.getHeader("set-cookie").join(" ");
+    expect(cookies).to.contain("ustudent_access");
+    expect(cookies).to.contain("ustudent_refresh");
+    expect(cookies.toLowerCase()).to.contain("httponly");
+  });
+}

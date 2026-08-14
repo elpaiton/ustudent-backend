@@ -1,0 +1,40 @@
+meta {
+  name: Refresh
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: none
+  auth: none
+}
+
+docs {
+  Renueva la sesion rotando el token de refresco: el anterior queda
+  consumido y se emite uno nuevo.
+
+  Presentar dos veces el mismo token de refresco es la senal clasica de que
+  alguien lo copio, y el backend responde revocando la cadena completa. Para
+  verlo, ejecuta esta peticion dos veces seguidas SIN pasar por el login: la
+  segunda debe fallar y dejarte fuera.
+
+  Ojo: al hacerlo, la sesion queda cerrada y las peticiones siguientes de la
+  coleccion daran 401 hasta que vuelvas a iniciar sesion.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("emite cookies nuevas", function() {
+    const cookies = res.getHeader("set-cookie").join(" ");
+    expect(cookies).to.contain("ustudent_access");
+    expect(cookies).to.contain("ustudent_refresh");
+  });
+
+  test("sigue siendo el mismo usuario", function() {
+    expect(res.getBody().email).to.equal(bru.getEnvVar("adminEmail"));
+  });
+}

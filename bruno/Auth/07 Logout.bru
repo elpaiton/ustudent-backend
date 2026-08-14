@@ -1,0 +1,32 @@
+meta {
+  name: Logout
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: none
+}
+
+docs {
+  Cierra la sesion: revoca en el servidor toda la cadena de tokens nacida de
+  este inicio de sesion y pide al navegador que borre las cookies.
+
+  Revocar en el servidor es lo que importa. Borrar la cookie sin revocar
+  dejaria el token vivo en manos de cualquiera que lo hubiera copiado.
+}
+
+tests {
+  test("responde 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+
+  test("pide borrar las dos cookies", function() {
+    const cookies = res.getHeader("set-cookie").join(" ");
+    expect(cookies).to.contain("ustudent_access=");
+    expect(cookies).to.contain("ustudent_refresh=");
+    expect(cookies).to.contain("Max-Age=0");
+  });
+}

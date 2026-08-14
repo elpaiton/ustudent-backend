@@ -1,0 +1,27 @@
+meta {
+  name: Ping
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/system/ping
+  body: none
+  auth: none
+}
+
+docs {
+  Endpoint publico. Sirve para confirmar que la API esta viva antes de
+  empezar a depurar cualquier otra cosa.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("se identifica como uStudent", function() {
+    expect(res.getBody().application).to.equal("ustudent-backend");
+    expect(res.getBody().status).to.equal("ok");
+  });
+}

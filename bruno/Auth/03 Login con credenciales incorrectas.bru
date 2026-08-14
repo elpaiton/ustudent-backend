@@ -1,0 +1,52 @@
+meta {
+  name: Login con credenciales incorrectas
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "noexiste@usta.edu.co",
+    "password": "cualquierCosa123*"
+  }
+}
+
+docs {
+  Usa a proposito un correo que NO existe.
+
+  Si apuntara a una cuenta real, cada ejecucion sumaria un intento fallido y
+  a la quinta la dejaria bloqueada quince minutos. Con un correo inexistente
+  la coleccion se puede ejecutar tantas veces como haga falta.
+
+  El mensaje debe ser identico al de una contrasena incorrecta sobre una
+  cuenta que si existe: si difirieran, comparando respuestas se podria
+  averiguar que correos estan registrados en la plataforma.
+
+  Para comprobar el bloqueo, esta la peticion "Bloqueo por intentos" en la
+  carpeta Extras, que avisa de lo que hace antes de hacerlo.
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("no revela si el correo existe", function() {
+    expect(res.getBody().detail).to.contain("Correo o contrasena incorrectos");
+  });
+
+  test("no emite ninguna cookie de sesion", function() {
+    const cookies = res.getHeader("set-cookie");
+    expect(cookies === undefined || cookies.length === 0).to.be.true;
+  });
+}
