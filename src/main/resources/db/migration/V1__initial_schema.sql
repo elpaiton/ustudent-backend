@@ -1,7 +1,6 @@
 -- uStudent · esquema inicial: identidad, acceso y soporte del sistema.
 -- Ver docs/02-arquitectura/modelo-datos.md
 
-CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ── Identidad ────────────────────────────────────────────────────────
@@ -9,7 +8,10 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE iam_users (
     id                BIGSERIAL     PRIMARY KEY,
     public_id         UUID          NOT NULL DEFAULT gen_random_uuid(),
-    email             CITEXT        NOT NULL,
+    -- varchar y no citext: Hibernate no reconoce citext al validar el esquema.
+    -- La unicidad sin distinguir mayusculas la garantiza el indice funcional
+    -- ix_users_email_lower, mas abajo.
+    email             VARCHAR(160)  NOT NULL,
     document_number   VARCHAR(20)   NOT NULL,
     full_name         VARCHAR(160)  NOT NULL,
     password_hash     VARCHAR(72)   NOT NULL,
@@ -20,10 +22,13 @@ CREATE TABLE iam_users (
     created_at        TIMESTAMPTZ   NOT NULL DEFAULT now(),
     updated_at        TIMESTAMPTZ   NOT NULL DEFAULT now(),
     CONSTRAINT uk_users_public_id UNIQUE (public_id),
-    CONSTRAINT uk_users_email     UNIQUE (email),
     CONSTRAINT uk_users_document  UNIQUE (document_number),
     CONSTRAINT ck_users_status    CHECK (status IN ('ACTIVE', 'INACTIVE', 'LOCKED'))
 );
+
+-- ana@usta.edu.co y Ana@USTA.edu.co son la misma cuenta: sin este indice se
+-- podrian registrar las dos y nadie sabria cual es cual al iniciar sesion.
+CREATE UNIQUE INDEX ix_users_email_lower ON iam_users (lower(email));
 
 CREATE TABLE iam_roles (
     id           BIGSERIAL     PRIMARY KEY,

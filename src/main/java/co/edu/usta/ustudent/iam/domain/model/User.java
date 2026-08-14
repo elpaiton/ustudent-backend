@@ -43,7 +43,10 @@ public class User {
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
 
-    @Column(nullable = false, unique = true, length = 160)
+    // La unicidad la impone un indice funcional sobre lower(email), no una
+    // restriccion de columna: dos correos que solo difieren en mayusculas son
+    // la misma cuenta.
+    @Column(nullable = false, length = 160)
     private String email;
 
     @Column(name = "document_number", nullable = false, unique = true, length = 20)
