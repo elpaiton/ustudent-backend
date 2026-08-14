@@ -19,6 +19,6 @@ tools/
   forma realista. Nunca datos reales, ni siquiera parciales.
 - `anonymize-dump` es obligatorio antes de llevar cualquier corte de producción a `staging`.
 - `check-contrast` corre en CI: si un par de tokens queda por debajo del mínimo, el build
-  falla ([RNF-U1](../docs/01-requisitos/requisitos-no-funcionales.md)).
+  falla ([RNF-U1](https://github.com/elpaiton/ustudent-docs/blob/main/01-requisitos/requisitos-no-funcionales.md)).
 - `gen-keys` produce claves **solo para desarrollo local**. Las de producción se generan y
   custodian en el gestor de secretos.

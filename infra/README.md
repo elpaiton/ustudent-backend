@@ -41,4 +41,4 @@ docker compose -f infra/docker/docker-compose.yml down -v
 ## Producción
 
 El despliegue, las variables de entorno, los respaldos y la rotación de claves están en
-[`docs/07-operacion/entornos-despliegue.md`](../docs/07-operacion/entornos-despliegue.md).
+[`docs/07-operacion/entornos-despliegue.md`](https://github.com/elpaiton/ustudent-docs/blob/main/07-operacion/entornos-despliegue.md).
