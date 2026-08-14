@@ -1,14 +1,24 @@
-# uStudent · Backend
+﻿# uStudent · Backend
 
 Spring Boot 4.1 · Java 21 · PostgreSQL 16. Monolito modular
-([ADR-0001](../../docs/06-adr/adr-0001-monolito-modular.md)).
+([ADR-0001](docs/06-adr/adr-0001-monolito-modular.md)).
+
+uStudent es una plataforma de **promoción y permanencia estudiantil**: canaliza las
+solicitudes y reportes de bienestar —los radique el propio estudiante o un docente sobre
+él—, los clasifica con apoyo de IA y calcula un índice de riesgo de deserción explicable a
+partir de reglas configurables.
+
+> Este repositorio aloja además la **documentación de todo el sistema**, incluida la del
+> frontend: arquitectura, requisitos, especificaciones, diagramas, ADRs y plan de
+> desarrollo están en [`docs/`](docs/README.md). La interfaz web vive en
+> [ustudent-frontend](https://github.com/elpaiton/ustudent-frontend).
 
 ## Arranque local
 
 Requiere PostgreSQL en marcha:
 
 ```bash
-docker compose -f ../../infra/docker/docker-compose.yml up -d
+docker compose -f infra/docker/docker-compose.yml up -d
 ```
 
 ```bash
@@ -88,7 +98,7 @@ integración.
   aplicada no se edita jamás; se corrige con una nueva.
 - **Semillas** (permisos, roles, modelo de riesgo, catálogos): `R__seed_*.sql`, repetibles e
   idempotentes. `R__seed_roles_permissions.sql` es la traducción directa de la
-  [matriz de permisos](../../docs/01-requisitos/matriz-roles-permisos.md).
+  [matriz de permisos](docs/01-requisitos/matriz-roles-permisos.md).
 - **Transacciones**: solo en `application/service`. Nunca en controladores ni repositorios.
 - **Eventos**: `@TransactionalEventListener(phase = AFTER_COMMIT)`.
 - **Autorización**: `@PreAuthorize("hasAuthority('recurso:accion')")` en el servicio de
@@ -111,7 +121,7 @@ sigue asumiendo la 3.x.
 
 ## Referencias
 
-- [Vista de arquitectura](../../docs/02-arquitectura/vision-arquitectura.md)
-- [Modelo de datos](../../docs/02-arquitectura/modelo-datos.md)
-- [Contrato de API](../../docs/03-especificaciones/api/api-rest.md)
-- [Motor de riesgo](../../docs/03-especificaciones/reglas/motor-riesgo-desercion.md)
+- [Vista de arquitectura](docs/02-arquitectura/vision-arquitectura.md)
+- [Modelo de datos](docs/02-arquitectura/modelo-datos.md)
+- [Contrato de API](docs/03-especificaciones/api/api-rest.md)
+- [Motor de riesgo](docs/03-especificaciones/reglas/motor-riesgo-desercion.md)
