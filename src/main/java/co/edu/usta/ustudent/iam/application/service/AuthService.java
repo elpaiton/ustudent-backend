@@ -34,13 +34,16 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwordEncoder;
     private final TokenIssuer tokens;
+    private final LoginAttemptService loginAttempts;
 
     public AuthService(UserRepository users, RefreshTokenRepository refreshTokens,
-                       PasswordEncoder passwordEncoder, TokenIssuer tokens) {
+                       PasswordEncoder passwordEncoder, TokenIssuer tokens,
+                       LoginAttemptService loginAttempts) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
+        this.loginAttempts = loginAttempts;
     }
 
     /** Par de tokens emitidos, listos para viajar en cookies httpOnly. */
@@ -72,10 +75,10 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            user.registerFailedAttempt();
-            users.save(user);
-            log.info("Intento fallido para el usuario {} ({} consecutivos)",
-                    user.getPublicId(), user.getFailedAttempts());
+            // En transaccion propia: lo que viene despues es una excepcion, que
+            // revertiria este incremento junto con el resto (ver LoginAttemptService).
+            loginAttempts.registerFailedAttempt(user.getId());
+            log.info("Intento fallido para el usuario {}", user.getPublicId());
             throw new ApiException(ErrorCode.UNAUTHENTICATED, INVALID_CREDENTIALS);
         }
 
