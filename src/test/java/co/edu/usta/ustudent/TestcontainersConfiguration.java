@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName;
  * Debe coincidir con la de {@code infra/docker/docker-compose.yml}.
  */
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+public class TestcontainersConfiguration {
 
     @Bean
     @ServiceConnection

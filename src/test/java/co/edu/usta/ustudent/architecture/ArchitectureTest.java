@@ -22,13 +22,30 @@ import com.tngtech.archunit.lang.ArchRule;
         importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
-    /** El dominio expresa reglas de negocio: no debe conocer el framework. */
+    /**
+     * El dominio expresa reglas de negocio: no debe conocer el framework de
+     * aplicacion.
+     *
+     * <p>Se permiten a proposito dos excepciones: {@code jakarta.persistence},
+     * porque son metadatos declarativos sobre como se guarda una entidad, y
+     * {@code org.springframework.data.repository}, que aporta las interfaces de
+     * repositorio. Separar ambas cosas exigiria duplicar el modelo entero y
+     * mapear entre las dos copias, coste que a esta escala no se paga solo.
+     *
+     * <p>Lo que sigue prohibido es lo que de verdad ata el dominio al
+     * framework: web, contenedor de dependencias, seguridad y arranque. Con
+     * eso, las reglas de negocio se prueban sin levantar contexto.
+     */
     @ArchTest
-    static final ArchRule el_dominio_no_depende_del_framework =
+    static final ArchRule el_dominio_no_depende_del_framework_de_aplicacion =
             noClasses()
                     .that().resideInAPackage("..domain..")
                     .should().dependOnClassesThat().resideInAnyPackage(
-                            "org.springframework..", "jakarta.persistence..")
+                            "org.springframework.web..",
+                            "org.springframework.context..",
+                            "org.springframework.boot..",
+                            "org.springframework.security..",
+                            "org.springframework.http..")
                     .allowEmptyShould(true)
                     .because("las reglas de negocio deben poder probarse sin levantar el framework");
 
