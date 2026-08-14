@@ -12,6 +12,7 @@ import co.edu.usta.ustudent.TestcontainersConfiguration;
 import co.edu.usta.ustudent.iam.domain.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,16 @@ class AdminCrudIntegrationTest {
         return "prueba-" + UUID.randomUUID().toString().substring(0, 8) + "@usta.edu.co";
     }
 
+    /**
+     * Diez digitos aleatorios.
+     *
+     * <p>Antes recortaba {@code System.nanoTime()} a doce caracteres, y eso
+     * fallaba en el CI: el origen de nanoTime es arbitrario, y en el runner de
+     * Linux el valor tiene once digitos. Un rango explicito no depende de esa
+     * casualidad.
+     */
     private String unicoDocumento() {
-        return String.valueOf(System.nanoTime()).substring(0, 12);
+        return String.valueOf(ThreadLocalRandom.current().nextLong(1_000_000_000L, 9_999_999_999L));
     }
 
     @Test
