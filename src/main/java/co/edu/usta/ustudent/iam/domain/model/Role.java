@@ -55,6 +55,32 @@ public class Role {
         // Requerido por JPA.
     }
 
+    /**
+     * Rol creado desde el panel de administracion.
+     *
+     * <p>Siempre con {@code system = false}: los cinco roles predefinidos se
+     * siembran por migracion y no hay forma de que uno creado a mano se haga
+     * pasar por uno de ellos para volverse indestructible.
+     */
+    public Role(String code, String name, String description, Set<Permission> permissions) {
+        this.publicId = UUID.randomUUID();
+        this.code = code;
+        this.name = name;
+        this.description = description;
+        this.system = false;
+        this.permissions = new LinkedHashSet<>(permissions);
+    }
+
+    public void rename(String newName, String newDescription) {
+        this.name = newName;
+        this.description = newDescription;
+    }
+
+    public void replacePermissions(Set<Permission> newPermissions) {
+        permissions.clear();
+        permissions.addAll(newPermissions);
+    }
+
     public Long getId() {
         return id;
     }

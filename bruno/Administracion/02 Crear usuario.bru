@@ -1,0 +1,67 @@
+meta {
+  name: Crear usuario
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/admin/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+script:pre-request {
+  // Correo y documento unicos en cada ejecucion: si se repitieran, la
+  // segunda vez responderia 409 y pareceria que algo se rompio.
+  const sufijo = Date.now().toString().slice(-8);
+  bru.setVar("nuevoCorreo", `prueba.${sufijo}@usta.edu.co`);
+  bru.setVar("nuevoDocumento", sufijo + "12");
+}
+
+body:json {
+  {
+    "email": "{{nuevoCorreo}}",
+    "documentNumber": "{{nuevoDocumento}}",
+    "fullName": "Persona Creada Desde Bruno",
+    "password": "unaContrasenaLarga",
+    "roles": ["TEACHER"]
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("usuarioCreadoId", res.getBody().id);
+  }
+}
+
+docs {
+  Requiere user:manage.
+
+  La contrasena exige 10 caracteres como minimo. Se prefiere longitud a
+  exigir simbolos raros, que solo consigue que la gente la apunte en un
+  papel pegado al monitor.
+
+  El id del usuario creado queda en la variable usuarioCreadoId, que usan
+  las dos peticiones siguientes.
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("nace activo y con el rol pedido", function() {
+    expect(res.getBody().status).to.equal("ACTIVE");
+    expect(res.getBody().roles).to.include("TEACHER");
+  });
+
+  test("la respuesta no filtra la contrasena", function() {
+    const texto = JSON.stringify(res.getBody()).toLowerCase();
+    expect(texto).to.not.contain("password");
+    expect(texto).to.not.contain("$2a$");
+  });
+}

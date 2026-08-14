@@ -1,0 +1,46 @@
+meta {
+  name: 403 Estudiante intenta administrar
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/users
+  body: none
+  auth: none
+}
+
+docs {
+  La prueba que mas importa de toda la coleccion.
+
+  Como ejecutarla:
+    1. "Extras/Login como estudiante"
+    2. Esta peticion
+
+  Debe responder 403, no 200. Un estudiante autenticado no puede listar los
+  usuarios de la plataforma.
+
+  La diferencia con el 401 no es cosmetica:
+    401 = no se quien eres
+    403 = se quien eres y no puedes
+
+  El menu del frontend ya oculta esta opcion a un estudiante, pero ocultar no
+  es autorizar: quien escriba la URL a mano o llame a la API directamente
+  tiene que chocar con esta pared. Por eso el permiso se exige en el servidor
+  y existe esta peticion.
+}
+
+tests {
+  test("responde 403 y no 200", function() {
+    expect(res.getStatus()).to.equal(403);
+  });
+
+  test("es 403 y no 401: la sesion es valida, el permiso no alcanza", function() {
+    expect(res.getBody().code).to.equal("ACCESS_DENIED");
+  });
+
+  test("no filtra ningun dato de usuarios en el error", function() {
+    const texto = JSON.stringify(res.getBody());
+    expect(texto).to.not.contain("@usta.edu.co");
+  });
+}

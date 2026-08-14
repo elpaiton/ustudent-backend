@@ -1,0 +1,61 @@
+meta {
+  name: Crear rol
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/admin/roles
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+script:pre-request {
+  bru.setVar("codigoRol", "PRUEBA_" + Date.now().toString().slice(-6));
+}
+
+body:json {
+  {
+    "code": "{{codigoRol}}",
+    "name": "Rol de prueba",
+    "description": "Creado desde Bruno para verificar la matriz de permisos",
+    "permissions": ["case:read:own", "mood:create:self"]
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("rolCreadoId", res.getBody().id);
+  }
+}
+
+docs {
+  Esta peticion es la que demuestra la promesa del sistema: crear un rol
+  nuevo es un cambio de datos, no de codigo. Nadie despliega nada.
+
+  El rol creado nunca es de sistema, asi que se puede eliminar despues (ver
+  "08 Eliminar rol"). Un rol creado a mano no puede hacerse pasar por uno
+  predefinido para volverse indestructible.
+
+  Prueba a incluir un permiso inventado en la lista: responde 400 y te dice
+  cual no existe. Aceptarlo en silencio dejaria un rol que parece conceder
+  algo y no concede nada.
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("no es un rol del sistema", function() {
+    expect(res.getBody().system).to.be.false;
+  });
+
+  test("tiene los permisos indicados", function() {
+    expect(res.getBody().permissions).to.have.lengthOf(2);
+  });
+}

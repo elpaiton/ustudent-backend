@@ -77,7 +77,10 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    // LAZY: las consultas que necesitan los permisos (login y perfil) traen los
+    // roles con join fetch en una sola consulta. Con EAGER, cada listado
+    // paginado de usuarios dispararia una consulta extra por fila.
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "iam_user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -157,6 +160,30 @@ public class User {
 
     public void assignRole(Role role) {
         roles.add(role);
+        updatedAt = Instant.now();
+    }
+
+    public void replaceRoles(Set<Role> newRoles) {
+        roles.clear();
+        roles.addAll(newRoles);
+        updatedAt = Instant.now();
+    }
+
+    public void rename(String newFullName) {
+        this.fullName = newFullName;
+        updatedAt = Instant.now();
+    }
+
+    /** Reactivar limpia tambien el bloqueo por intentos: es la via manual de desbloqueo. */
+    public void activate() {
+        this.status = UserStatus.ACTIVE;
+        this.failedAttempts = 0;
+        this.lockedUntil = null;
+        updatedAt = Instant.now();
+    }
+
+    public void deactivate() {
+        this.status = UserStatus.INACTIVE;
         updatedAt = Instant.now();
     }
 

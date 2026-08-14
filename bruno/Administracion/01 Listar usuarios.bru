@@ -1,0 +1,49 @@
+meta {
+  name: Listar usuarios
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/users?page=0&size=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 0
+  size: 20
+  ~query: docente
+}
+
+docs {
+  Requiere el permiso user:read y una sesion de administrador: ejecuta antes
+  "Auth/04 Login".
+
+  El parametro query filtra por nombre, correo o documento. Esta desactivado
+  por defecto (aparece tachado); activalo para probar la busqueda.
+
+  Este listado tuvo un fallo real: con el filtro vacio, PostgreSQL no podia
+  inferir el tipo del parametro nulo y respondia 500. Por eso hay dos
+  consultas separadas en vez de un "si es null" dentro del SQL.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("la paginacion tiene la forma del contrato", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("content");
+    expect(body).to.have.property("totalElements");
+    expect(body).to.have.property("totalPages");
+    expect(body.content).to.be.an("array");
+  });
+
+  test("ningun usuario expone su contrasena", function() {
+    const texto = JSON.stringify(res.getBody()).toLowerCase();
+    expect(texto).to.not.contain("password");
+    expect(texto).to.not.contain("$2a$");
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Listar roles
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/admin/roles
+  body: none
+  auth: none
+}
+
+docs {
+  Los cinco roles predefinidos con sus permisos. Los marcados system: true
+  no se pueden eliminar, aunque si se les pueden cambiar los permisos: la
+  institucion puede decidir que su personal de bienestar necesita uno mas.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("estan los cinco roles predefinidos", function() {
+    const codigos = res.getBody().map(r => r.code);
+    ["STUDENT", "TEACHER", "WELLBEING", "COORDINATOR", "ADMIN"].forEach(c => {
+      expect(codigos).to.include(c);
+    });
+  });
+
+  test("los predefinidos estan marcados como del sistema", function() {
+    const admin = res.getBody().find(r => r.code === "ADMIN");
+    expect(admin.system).to.be.true;
+  });
+
+  test("el estudiante no tiene permisos de riesgo ni de administracion", function() {
+    const estudiante = res.getBody().find(r => r.code === "STUDENT");
+    expect(estudiante.permissions).to.not.include("risk:read:student");
+    expect(estudiante.permissions).to.not.include("user:manage");
+  });
+}

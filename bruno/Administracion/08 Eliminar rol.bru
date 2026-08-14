@@ -1,0 +1,29 @@
+meta {
+  name: Eliminar rol
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/admin/roles/{{rolCreadoId}}
+  body: none
+  auth: none
+}
+
+docs {
+  Elimina el rol creado en "06 Crear rol".
+
+  Dos reglas que conviene comprobar a mano:
+
+  - Intenta eliminar un rol predefinido (usa el id de ADMIN de "05 Listar
+    roles"): responde 422. Los cinco roles del sistema no se eliminan.
+  - Asigna el rol a un usuario y luego intenta eliminarlo: responde 409 e
+    indica cuantos usuarios lo tienen. Borrarlo dejaria cuentas sin permisos
+    y nadie entenderia por que dejaron de funcionar.
+}
+
+tests {
+  test("responde 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

@@ -1,0 +1,45 @@
+meta {
+  name: Reasignar roles
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/admin/users/{{usuarioCreadoId}}/roles
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "roles": ["TEACHER", "WELLBEING"]
+  }
+}
+
+docs {
+  Reemplaza por completo los roles del usuario: lo que se envia es la lista
+  final, no un anadido.
+
+  Revoca sus sesiones abiertas. Los permisos viajan dentro del token, asi que
+  sin revocar seguiria operando con los permisos viejos hasta que expirara.
+  Quitarle un permiso a alguien tiene que surtir efecto ya, no en media hora.
+
+  Usa el id que dejo "02 Crear usuario".
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("los roles quedan reemplazados, no acumulados", function() {
+    const roles = res.getBody().roles;
+    expect(roles).to.have.lengthOf(2);
+    expect(roles).to.include("TEACHER");
+    expect(roles).to.include("WELLBEING");
+  });
+}

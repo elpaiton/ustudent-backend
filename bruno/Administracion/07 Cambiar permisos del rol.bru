@@ -1,0 +1,41 @@
+meta {
+  name: Cambiar permisos del rol
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/admin/roles/{{rolCreadoId}}/permissions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "permissions": ["case:read:own"]
+  }
+}
+
+docs {
+  Reemplaza la matriz de permisos del rol: lo que se envia es la lista
+  final.
+
+  Quien ya tenga sesion abierta conserva sus permisos hasta que su token de
+  acceso expire, porque los permisos viajan dentro. Con 30 minutos de vida,
+  la ventana es acotada y conocida. Si hiciera falta efecto inmediato, la via
+  es revocar las sesiones de los usuarios afectados.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("los permisos quedan reemplazados", function() {
+    expect(res.getBody().permissions).to.deep.equal(["case:read:own"]);
+  });
+}

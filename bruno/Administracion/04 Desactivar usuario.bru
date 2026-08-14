@@ -1,0 +1,45 @@
+meta {
+  name: Desactivar usuario
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/admin/users/{{usuarioCreadoId}}/status
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "status": "INACTIVE",
+    "reason": "prueba desde Bruno"
+  }
+}
+
+docs {
+  Las cuentas no se borran, se desactivan: un usuario con casos radicados
+  debe seguir siendo identificable en el expediente del estudiante y en la
+  bitacora de auditoria.
+
+  Desactivar revoca las sesiones abiertas del usuario. Si no, seguiria
+  entrando con el token que ya tenia hasta que venciera.
+
+  Hay una regla que conviene probar: intenta desactivar TU PROPIA cuenta
+  (pon el id del admin en la URL) y responde 422. Sin ella, un administrador
+  puede dejarse fuera de su plataforma con un clic.
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("la cuenta queda inactiva", function() {
+    expect(res.getBody().status).to.equal("INACTIVE");
+  });
+}
